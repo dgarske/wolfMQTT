@@ -438,8 +438,9 @@ int MqttEncode_Props(MqttPacketType packet, MqttProp* props, byte* buf)
             }
             case MQTT_DATA_TYPE_STRING:
             {
-                tmp = MqttEncode_String(buf,
-                        (const char*)cur_prop->data_str.str);
+                tmp = MqttEncode_Data(buf,
+                        (const byte*)cur_prop->data_str.str,
+                        cur_prop->data_str.len);
                 rc += tmp;
                 if (buf != NULL) {
                     buf += tmp;
@@ -472,15 +473,17 @@ int MqttEncode_Props(MqttPacketType packet, MqttProp* props, byte* buf)
             {
                 /* String is prefixed with a Two Byte Integer length field that
                    gives the number of bytes */
-                tmp = MqttEncode_String(buf,
-                        (const char*)cur_prop->data_str.str);
+                tmp = MqttEncode_Data(buf,
+                        (const byte*)cur_prop->data_str.str,
+                        cur_prop->data_str.len);
                 rc += tmp;
                 if (buf != NULL) {
                     buf += tmp;
                 }
 
-                tmp = MqttEncode_String(buf,
-                        (const char*)cur_prop->data_str2.str);
+                tmp = MqttEncode_Data(buf,
+                        (const byte*)cur_prop->data_str2.str,
+                        cur_prop->data_str2.len);
                 rc += tmp;
                 if (buf != NULL) {
                     buf += tmp;
@@ -2634,9 +2637,9 @@ int MqttProps_Init(void)
     int ret = MQTT_CODE_SUCCESS;
 #if !defined(WOLFMQTT_DYN_PROP) && defined(WOLFMQTT_MULTITHREAD)
     if (clientPropStack_lockInit == 0) {
-        clientPropStack_lockInit++;
         ret = wm_SemInit(&clientPropStack_lock);
     }
+    clientPropStack_lockInit++;
 #endif
     return  ret;
 }
